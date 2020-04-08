@@ -1,11 +1,11 @@
 package com.ajones.blackjack;
+
 import com.ajones.blackjack.cardtypes.Deck;
 import com.ajones.blackjack.cardtypes.Hand;
 
 import java.util.*;
 
 public class Main {
-
 
     public static void main(String[] args) {
         System.out.println("Welcome to the table!");
@@ -14,90 +14,85 @@ public class Main {
 
     public static void playBlackJack() {
         Scanner scanner = new Scanner(System.in);
+
+        // Reset deck prompt
+        boolean resetDeck = true;
+        System.out.println("\nEnter 'Y' if you would like to keep the same deck in-between games:\r");
+        String sameDeck = scanner.nextLine();
+        if(sameDeck.equals("Y")) {
+            resetDeck = false;
+        }
+
         Deck deck = new Deck();
         while (true) {
 
-            Hand myHand = new Hand();
+            Hand playerHand = new Hand();
             Hand dealerHand = new Hand();
 
             // Deal initial hand
-            myHand.addCard(deck.drawCard());
-            myHand.addCard(deck.drawCard());
+            playerHand.addCard(deck.drawCard());
+            playerHand.addCard(deck.drawCard());
             dealerHand.addCard(deck.drawCard());
             dealerHand.addCard(deck.drawCard());
 
             boolean stay = false; // Flag to indicate user has completed input, dealer's turn.
-            boolean bypassPrint = false; // Flag to indicate an additional printHands is not necessary.
             boolean blackJack = false;// Flag for instant BlackJack win!
+            boolean bust = false; // Flag for user bust.
 
-            printHands(myHand, dealerHand, stay); // Print initial Deal
+            printHands(playerHand, dealerHand, stay); // Print initial deal
 
-            if (myHand.sum() == 21) { // Check for BlackJack, instant win
+            // Check for BlackJack, instant win unless dealer also has BlackJack
+            if (playerHand.sum() == 21) {
                 stay = true;
-                bypassPrint = true;
                 blackJack = true;
+                pauseForEffect();
+                printHands(playerHand, dealerHand, stay);
             }
 
-            //Player decision prompts
+            // Player decision prompts
             String choice;
             while (!stay) {
                 System.out.println("\nWould you like to hit? - Y/N\r");
                 choice = scanner.nextLine();
                 if (choice.equals("Y")) {
-                    myHand.addCard(deck.drawCard());
-                    printHands(myHand, dealerHand, stay);
+                    playerHand.addCard(deck.drawCard());
+                    printHands(playerHand, dealerHand, stay);
                 } else if (choice.equals("N")) {
                     stay = true;
                 } else {
                     System.out.println("Error. Try again");
                 }
-                if (myHand.sum() > 21) { // CHECK FOR BUST TO BYPASS
+                if (playerHand.sum() > 21) { // CHECK FOR BUST TO BYPASS
                     stay = true;
-                    bypassPrint = true;
+                    bust = true;
                 }
-                if (myHand.sum() == 21) { // CHECK FOR 21 TO BYPASS
+                if (playerHand.sum() == 21) { // CHECK FOR 21 TO BYPASS
                     stay = true;
                 }
             }
 
-            if (!bypassPrint) {
-                printHands(myHand, dealerHand, stay);
-            }
-
-            // Dealer simulator
-            if (!blackJack) {
-                if ((dealerHand.sum() < myHand.sum() && dealerHand.sum() <= 16 && myHand.sum() <= 21) ||
-                        (myHand.sum() <= 21 && dealerHand.sum() < myHand.sum())) {
-                    if (myHand.sum() == 21) {
-                        while (dealerHand.sum() <= 21) {
-                            pauseForEffect();
-                            System.out.println("\nThe Dealer hits.\n");
-                            pauseForEffect();
-                            dealerHand.addCard(deck.drawCard());
-                            printHands(myHand, dealerHand, stay);
-                            pauseForEffect();
-                        }
-                    } else {
-                        while (dealerHand.sum() <= 16) {
-                            pauseForEffect();
-                            System.out.println("\nThe Dealer hits.");
-                            pauseForEffect();
-                            dealerHand.addCard(deck.drawCard());
-                            printHands(myHand, dealerHand, stay);
-                        }
+            // Dealer Responses
+            if (!blackJack) { // Instant dealer-lose if BlackJack
+                if (!bust) {
+                    pauseForEffect();
+                    printHands(playerHand, dealerHand, stay);
+                    while (dealerHand.sum() <= playerHand.sum() && dealerHand.sum() < 21 && playerHand.sum() <= 21) {
+                        pauseForEffect();
+                        System.out.println("\nThe Dealer hits.");
+                        pauseForEffect();
+                        dealerHand.addCard(deck.drawCard());
+                        printHands(playerHand, dealerHand, stay);
                     }
                     if (dealerHand.sum() > 21) {
-                        pauseForEffect();
                         System.out.println("\nThe Dealer busts.");
                     } else {
-                        pauseForEffect();
                         System.out.println("\nThe Dealer stays.");
                     }
                 }
             }
 
             // Call for outcomes
-            outcome(myHand, dealerHand, blackJack);
+            outcome(playerHand, dealerHand, blackJack);
 
             // 'Play again?' Prompt
             System.out.println("\nEnter 'Y' to play again: \r");
@@ -105,48 +100,47 @@ public class Main {
             if (!choice.equals("Y")) {
                 System.out.println("Quitting...");
                 break;
-            } else {
-                if (deck.getCards().size() < 10) { // Forces reset of deck if there are not many cards left
-                    System.out.println("There are less than 10 cards left, resetting the deck...");
-                    deck = new Deck();
-                } else {
-                    System.out.println("Would you like to continue with the same deck? Y/N"); // Retain same deck order and used cards
-                    String deckChoice = scanner.nextLine();
-                    if (!deckChoice.equals("Y")) {
-                        deck = new Deck();
-                    }
-                }
+            }
+
+            // Check to reset deck or not
+            if(resetDeck){
+                deck = new Deck();
+            } else if (deck.getCards().size() < 10){
+                pauseForEffect();
+                System.out.println("Cards running low, deck will be reset now.");
+                deck = new Deck();
             }
         }
     }
 
     // Print cards ArrayList for both hands. (Dealer only displays second card after user 'stays')
-    private static void printHands(Hand myHand, Hand dealerHand, boolean stay) {
+    private static void printHands(Hand playerHand, Hand dealerHand, boolean stay) {
         if (stay) {
             System.out.println("\n==============================");
-            System.out.println("Your final hand: " + myHand.getCards() + "    Total = " + myHand.sum());
+            System.out.println("Your final hand: " + playerHand.getCards() + "    Total = " + playerHand.sum());
             System.out.println("Dealer: " + dealerHand.getCards() + "    Total = " + dealerHand.sum());
             System.out.println("==============================");
         } else {
             System.out.println("\n==============================");
-            System.out.println("Your hand: " + myHand.getCards() + "    Total = " + myHand.sum());
+            System.out.println("Your hand: " + playerHand.getCards() + "    Total = " + playerHand.sum());
             System.out.println("Dealer's hand: [" + dealerHand.getCards().get(0) + ", *XXXXXXXXXXX*]");
             System.out.println("==============================");
         }
     }
 
-    //Game Outcomes
-    private static void outcome(Hand myHand, Hand dealerHand, boolean blackJack) {
+    // Game Outcomes
+    private static void outcome(Hand playerHand, Hand dealerHand, boolean blackJack) {
         pauseForEffect();
-        if (myHand.sum() == dealerHand.sum()) {
-            System.out.println("\nDRAW!");
-        } else if (myHand.sum() > 21) {
+        if (playerHand.sum() == dealerHand.sum()) {
+            System.out.println("\nPUSH!");
+        } else if (playerHand.sum() > 21) {
             System.out.println("\nBUST, YOU LOST!");
-        } else if (myHand.sum() < 21 && dealerHand.sum() > myHand.sum() && dealerHand.sum() <= 21) {
+            printHands(playerHand, dealerHand, true);
+        } else if (playerHand.sum() < 21 && dealerHand.sum() > playerHand.sum() && dealerHand.sum() <= 21) {
             System.out.println("\nYOU LOST!");
         } else if (blackJack) {
             System.out.println("\n!!!!!BLACKJACK!!!!! YOU WON!");
-        } else if (myHand.sum() < 21 && dealerHand.sum() < myHand.sum() || dealerHand.sum() > 21) {
+        } else if (playerHand.sum() < 21 && dealerHand.sum() < playerHand.sum() || dealerHand.sum() > 21) {
             System.out.println("\nYOU WON!");
         }
     }
@@ -174,6 +168,4 @@ public class Main {
         }
         System.out.println();
     }
-
-
 }

@@ -10,14 +10,6 @@ public class Card {
         Rank(int value) {
             this.value = value;
         }
-
-        public int getValue() {
-            return value;
-        }
-
-        public void setValue(int value) { // Potentially to use for Ace variability?
-            this.value = value;
-        }
     }
 
     public enum Suit {
