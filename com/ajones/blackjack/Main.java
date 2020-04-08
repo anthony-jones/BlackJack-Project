@@ -18,8 +18,8 @@ public class Main {
         // Reset deck prompt
         boolean resetDeck = true;
         System.out.println("\nEnter 'Y' if you would like to keep the same deck in-between games:\r");
-        String sameDeck = scanner.nextLine();
-        if(sameDeck.equals("Y")) {
+        String sameDeck = scanner.nextLine().toLowerCase();
+        if(sameDeck.equals("y")) {
             resetDeck = false;
         }
 
@@ -53,11 +53,11 @@ public class Main {
             String choice;
             while (!stay) {
                 System.out.println("\nWould you like to hit? - Y/N\r");
-                choice = scanner.nextLine();
-                if (choice.equals("Y")) {
+                choice = scanner.nextLine().toLowerCase();
+                if (choice.equals("y")) {
                     playerHand.addCard(deck.drawCard());
                     printHands(playerHand, dealerHand, stay);
-                } else if (choice.equals("N")) {
+                } else if (choice.equals("n")) {
                     stay = true;
                 } else {
                     System.out.println("Error. Try again");
@@ -96,8 +96,8 @@ public class Main {
 
             // 'Play again?' Prompt
             System.out.println("\nEnter 'Y' to play again: \r");
-            choice = scanner.nextLine();
-            if (!choice.equals("Y")) {
+            choice = scanner.nextLine().toLowerCase();
+            if (!choice.equals("y")) {
                 System.out.println("Quitting...");
                 break;
             }
