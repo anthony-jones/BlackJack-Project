@@ -8,18 +8,18 @@ import java.util.*;
 public class Main {
 
     public static void main(String[] args) {
-        System.out.println("Welcome to the table!");
         playBlackJack();
     }
 
     public static void playBlackJack() {
+        System.out.println("Welcome to the table!");
         Scanner scanner = new Scanner(System.in);
 
         // Reset deck prompt
         boolean resetDeck = true;
         System.out.println("\nEnter 'Y' if you would like to keep the same deck in-between games:\r");
         String sameDeck = scanner.nextLine().toLowerCase();
-        if(sameDeck.equals("y")) {
+        if (sameDeck.equals("y")) {
             resetDeck = false;
         }
 
@@ -103,9 +103,9 @@ public class Main {
             }
 
             // Check to reset deck or not
-            if(resetDeck){
+            if (resetDeck) {
                 deck = new Deck();
-            } else if (deck.getCards().size() < 10){
+            } else if (deck.getCards().size() < 10) {
                 pauseForEffect();
                 System.out.println("Cards running low, deck will be reset now.");
                 deck = new Deck();
